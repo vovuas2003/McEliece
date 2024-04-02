@@ -47,12 +47,13 @@ def decode(S, P, c):
     return c
 
 def break_S(P, G_):
+    return my_fix(G_ @ np.linalg.inv(P)) #works for Reed-Solomon
     #G_ = S @ G @ P
     rs = galois.ReedSolomon(n, k, field=GF)
     G = rs.G
     G_ = G_ @ np.linalg.inv(P)
     G_ = my_fix(G_)
-    G = my_fix(G)
+    G = my_fix(G) #returns E because we use Reed-Solomon algo
     S = G_ @ np.linalg.inv(G)
     return S
 

@@ -1,5 +1,6 @@
 import numpy as np
 import galois
+import random
 
 import pubkey
 
@@ -28,7 +29,12 @@ def encrypt(G_, text):
     msg = pad_message(text.encode(), k)
     m = GF(msg)
     c = m.T @ G_
-    return c
+    t = (n - k) // 2
+    z = np.zeros(n, dtype = int)
+    p = [i for i in range(n)]
+    for i in range(t):
+        z[p.pop(random.randint(0, n - 1 - i))] = random.randint(0, order - 1)
+    return c + GF(z)
 
 def export(ct):
     output = "ct = [ " + ", ".join([str(int(cell)) for cell in ct]) + " ]"
