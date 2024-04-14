@@ -1,5 +1,9 @@
 #pip install pyinstaller
 #pyinstaller -F -i "icon.ico" portable.py
+'''
+unfortunately, it doesn't work, maybe because pyinstaller doesn't append *.db galois files
+and there are one warning about couldn't finding tbb12.dll during making exe file
+'''
 
 import numpy as np
 import galois
