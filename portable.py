@@ -1,3 +1,4 @@
+#pip install pyinstaller
 #pyinstaller -F -i "icon.ico" portable.py
 
 import numpy as np
@@ -10,10 +11,10 @@ def main():
 
 def start_menu():
     f = True
-    print("\nA soldering iron is into a black hole.")
-    if myhash(getpass.getpass("Login: ")) != 1314399736851798576: #thermorectal
+    print("\nA soldering iron is into a black hole.") #thermorectal cryptanalysis
+    if myhash(getpass.getpass("Login: ")) != 1314399736851798576:
         f = False
-    if myhash(getpass.getpass("Password: ")) != 192441972608755898: #cryptanalysis
+    if myhash(getpass.getpass("Password: ")) != 192441972608755898:
         f = False
     if f:
         menu()
