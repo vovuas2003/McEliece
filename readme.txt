@@ -1,5 +1,7 @@
 McEliece cryptosystem implementation
 
+Update: portable version is available! All functions in one file, build it into exe file (for Windows) with pyinstaller. New features and some improvements!
+
 Usage:
 0. pip install numpy and galois
 1. generate.py - generate and save public and private keys
