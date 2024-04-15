@@ -1,9 +1,5 @@
 #pip install pyinstaller
 #pyinstaller -F -i "icon.ico" portable.py
-'''
-unfortunately, it doesn't work, maybe because pyinstaller doesn't append *.db galois files
-and there are one warning about couldn't finding tbb12.dll during making exe file
-'''
 
 import numpy as np
 import galois
@@ -15,25 +11,28 @@ def main():
 
 def start_menu():
     f = True
-    print("\nA soldering iron is into a black hole.") #thermorectal cryptanalysis
+    print("\nA soldering iron is into a black hole.")
+    #thermorectal cryptanalysis
     if myhash(getpass.getpass("Login: ")) != 1314399736851798576:
         f = False
     if myhash(getpass.getpass("Password: ")) != 192441972608755898:
         f = False
     if f:
+        print("Authorization successful, wait a bit.")
         menu()
     else:
         print("Permission denied.")
-    print("Press ENTER to exit.", end = '')
+    print("\nPress ENTER to exit.", end = '')
     input()
 
 def menu():
-    n = 127
-    k = 32
-    order = 2 ** 7
-    GF = galois.GF(order)
-    rs = galois.ReedSolomon(n, k, field=GF)
-    print("McEliece cryptosystem implementation by vovuas2003.\n")
+    order = 2 ** 8
+    n = order - 1
+    k = 210
+    #print(galois.GF(2 ** 8).properties)
+    GF = galois.GF(2, 8, irreducible_poly = "x^8 + x^4 + x^3 + x^2 + 1", primitive_element = "x", verify = False)
+    rs = galois.ReedSolomon(n, k, field = GF)
+    print("\nMcEliece cryptosystem implementation by vovuas2003.\n")
     print("All necessary txt files must be located in the directory with this exe program.\n")
     info = "Menu numbers: 0 = exit, 1 = generate keys, 2 = encrypt, 3 = decrypt,\n4 = restore pubkey, 5 = break privkey_s, 6 = break privkey_p; h = help.\n"
     err = "Error! Check command info and try again!\n"
@@ -127,9 +126,11 @@ def myhash(s, m = 2**61 - 1, p = 257):
     return a
 
 def PT(m):
+    M = 5
     if m == 0:
-        print("Iron: 'I don't want to go there!!!'")
-        return
+        print("Iron: 'OK, I will choose the number by myself.'")
+    while m == 0:
+        m = random.randint(-M, M)
     s = "PT!"
     p = "   "
     f = False
@@ -137,9 +138,10 @@ def PT(m):
         s, p = p, s
         m *= -1
         f = True
-    if m > 5:
-        print("Iron: 'It's too far for me!'")
-        return
+    if m > M:
+        print("Iron: 'Are you sure to move me so far?'")
+        if(not get_yes_no()):
+            return
     print()
     if f:
         print(p * (10 * m + 1))
@@ -246,6 +248,7 @@ def encrypt(n, k, order, GF):
     G_ = GF(read_pubkey())
     with open("text.txt", "r") as f:
         text = f.read()
+    text = text.encode()
     with open("message.txt", "w") as f:
         while len(text) > k - 1:
             tmp = text[: k - 1]
@@ -257,7 +260,7 @@ def encrypt(n, k, order, GF):
         f.write(" ".join([str(i) for i in c]))
 
 def encrypt_one(n, k, order, GF, G_, text):
-    msg = pad_message(text.encode(), k)
+    msg = pad_message(text, k)
     m = GF(msg)
     c = m.T @ G_
     t = (n - k) // 2
@@ -272,13 +275,15 @@ def encrypt_one(n, k, order, GF, G_, text):
 def decrypt(n, GF, rs):
     S_inv = np.linalg.inv(GF(read_privkey_s()))
     P_inv = GF(build_P_inv(n, GF, read_privkey_p()))
+    s = []
     with open("message.txt", "r") as inp, open("text.txt", "w") as out:
         while True:
             msg = inp.readline()
             if not msg:
                 break
             msg = GF(list(map(int, msg.split())))
-            out.write(decrypt_one(rs, S_inv, P_inv, msg))
+            s += decrypt_one(rs, S_inv, P_inv, msg)
+        out.write(bytes(s).decode())
 
 def decrypt_one(rs, S_inv, P_inv, msg):
     msg = msg @ P_inv
@@ -288,8 +293,8 @@ def decrypt_one(rs, S_inv, P_inv, msg):
         raise Exception()
     msg = msg @ S_inv
     msg = [int(i) for i in msg]
-    msg = bytes(unpad_message(msg))
-    return msg.decode()
+    msg = unpad_message(msg)
+    return msg
 
 def restore_G_(n, GF, rs):
     S = GF(read_privkey_s())
