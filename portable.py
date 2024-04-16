@@ -1,5 +1,6 @@
 #pip install pyinstaller
 #pyinstaller -F -i "icon.ico" portable.py
+#exe into dist folder
 
 import numpy as np
 import galois
@@ -7,7 +8,13 @@ import random
 import getpass
 
 def main():
-    start_menu()
+    safe_start()
+
+def safe_start():
+    try:
+        start_menu()
+    except:
+        print("\nUnknown error, maybe ctrl+c\n")
 
 def start_menu():
     f = True
