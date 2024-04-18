@@ -1,7 +1,9 @@
-McEliece cryptosystem implementation
+McEliece cryptosystem implementation by vovuas2003
 
 Update: portable version is available! All functions in one file. New features and some improvements!
+Update 2: portable_v2 is available! Nice keys and message saving in base64 string format, so it is easy to integrate with other projects by a small change of read and write functions.
 
+Instruction for old version below
 Usage:
 0. pip install numpy and galois
 1. generate.py - generate and save public and private keys
@@ -13,7 +15,7 @@ Hacker can get your private key if he will know a half of it (and pubkey.py, dec
 Check break.py to understand how hacker can do this.
 
 todo:
-0. build portable exe with pyinstaller
+0. DONE!(in portable versions) build portable exe with pyinstaller
 1. left part of G is E, because we use Reed-Solomon algo; so left part of S @ G is S and cutting right colomns works; my_fix(G) returns E and in break_S we needn't get inv(G), just S = my_fix(G_ @ inv(P)); try break_S with another (not Reed-Solomon) code (matrix G will be different; will my_fix(G) and my_fix(G_) return nonsingular matrices?; of course, rank(G) = rank(G_) = k and we can iterate through all possible combinations of column deletions and find one that does not lead to nonsingular matrices); another way to get S is calculating it row by row (solving k systems, each has n equations with k variables, k < n, but we need to do it in Galois Field)
 2. DONE! check randomization during encode (add vector z, check https://en.wikipedia.org/wiki/McEliece_cryptosystem)
-3. DONE! make presentation that explains McEliece cryptosystem
+3. DONE!(Russian language) make presentation that explains McEliece cryptosystem
