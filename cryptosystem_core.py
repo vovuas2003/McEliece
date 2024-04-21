@@ -1,28 +1,40 @@
-#G = pubkey; S and P = privkeys; text = plaintext; msg = encrypted text
-#all these variables are strings
-#text must be in utf-8 encoding
-#keys and messages is saves in base64 format
+#McEliece cryptosystem implementation by vovuas2003
 
-#Usage (see GUI and console examples):
-#G, S, P = generate()
-#msg = encrypt(G, text)
-#text = decrypt(S, P, msg)
-#G = restore_G(S, P)
-#S = break_S(G, P)
-#P = break_P(G, S)
+#Usage:
+#G = pubkey; S and P = privkeys; text = plaintext; msg = encrypted text
+#all these variables are strings, so it's easy to integrate this code into any project (see GUI and console examples)
+#text must be in utf-8 encoding (e.g. force encoding when open txt files, see console example)
+#keys and messages is saved as base64 string
+
+'''
+import cryptosystem_core as core
+G, S, P = core.generate()
+msg = core.encrypt(G, text)
+text = core.decrypt(S, P, msg)
+G = core.restore_G(S, P)
+S = core.break_S(G, P)
+P = core.break_P(G, S)
+core.config("255 210") #this is the default configuration, NO NEED TO WRITE THIS LINE FOR INITIALIZATION, it is just an example of using the function
+#these parameters n and k affect the length of the keys and the number of erroneous bytes in the message
+#see the comments below to understand the requirements for n and k
+'''
+
+#if you want to figure out how the code below works, keep in mind that
+#G_ is a pubkey, G is a Reed Solomon code matrix and P is saved as permutation array
+#to use the core of the cryptosystem, you don't need to think about it, just write the code as in the example above
 
 import numpy as np
 import galois
 import random
 import base64
 
-order = 256 #= p^m = 2**8; encrypt each byte and save in base64 format
-n = 255 #(order - 1) mod n = 0 for Reed Solomon code
-k = 210 #k <= n, randomly change (n - k) div 2 bytes during encryption
-GF = galois.GF(2, 8, irreducible_poly = "x^8 + x^4 + x^3 + x^2 + 1", primitive_element = "x", verify = False) #hardcoded GF.properties for pyinstaller
+order = 256 #p^m = 2**8; encrypt each byte and save in base64 format
+n = 255 #(order - 1) mod n = 0 for Reed Solomon code; 255 = 3 * 5 * 17 = (order - 1)
+k = 210 #2 <= k <= n; randomly change (n - k) div 2 bytes during encryption
+GF = galois.GF(2, 8, irreducible_poly = "x^8 + x^4 + x^3 + x^2 + 1", primitive_element = "x", verify = False) #hardcoded galois.GF(2**8).properties for pyinstaller
 rs = galois.ReedSolomon(n, k, field = GF)
 
-def main():
+def main(): #for testing
     pass
 
 def config(string):
