@@ -1,6 +1,5 @@
 #pyinstaller -F -i "icon.ico" McEliece_console.py
 
-import cryptosystem_core as core
 import getpass
 import random
 
@@ -30,6 +29,7 @@ def start_menu():
     input()
 
 def menu():
+    import cryptosystem_core as core
     print("\nMcEliece cryptosystem implementation by vovuas2003.\n")
     print("All necessary txt files must be in utf-8 and located in the directory with this exe program.\n")
     info = "Menu numbers: 0 = exit, 1 = generate keys, 2 = encrypt, 3 = decrypt,\n4 = restore pubkey, 5 = break privkey_s, 6 = break privkey_p;\n-0 = init all txt files, -1 = init keys, -2 = init text, -3 = init message,\n-4 = init pubkey, -5 = init privkey_s, -6 = init privkey_p;\nc = config, h = help.\n"
