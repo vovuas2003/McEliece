@@ -1,4 +1,4 @@
-#pyinstaller -F -i "icon.ico" McEliece_GUI.py
+#pyinstaller -F -w -i "icon.ico" McEliece_GUI.py
 
 import cryptosystem_core as core
 import tkinter as tk
