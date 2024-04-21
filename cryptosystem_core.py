@@ -2,9 +2,9 @@
 
 #Usage:
 #G = pubkey; S and P = privkeys; text = plaintext; msg = encrypted text
-#all these variables are strings, so it's easy to integrate this code into any project (see GUI and console examples)
-#text must be in utf-8 encoding (e.g. force encoding when open txt files, see console example)
-#keys and messages is saved as base64 string
+#all these variables are strings, so it's easy to integrate this code into any project (check GUI and console examples)
+#text must be in utf-8 encoding (e.g. force encoding when open txt files, check console example)
+#keys and messages are saved as base64 strings
 
 '''
 import cryptosystem_core as core
