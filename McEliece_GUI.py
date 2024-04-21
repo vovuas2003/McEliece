@@ -1,16 +1,23 @@
 #pyinstaller -F -i "icon.ico" McEliece_GUI.py
 
-#Thanks for AI, I don't know tkinter lib
-
 import cryptosystem_core as core
 import tkinter as tk
-from tkinter.messagebox import showerror, showwarning, showinfo
+
+def mymessagebox(fontsize, butsize, mytitle, mytext):
+    toplevel = tk.Toplevel(window)
+    toplevel.title(mytitle)
+    toplevel.geometry(f"600x400+{window.winfo_x()+40}+{window.winfo_y()+15}")
+    toplevel.resizable(False, False)
+    l = tk.Label(toplevel, text = mytext, font = ("TkDefaultFont", fontsize))
+    l.pack()
+    b = tk.Button(toplevel, text = "Close", command = toplevel.destroy, width = 10, font = ("TkDefaultFont", butsize))
+    b.pack()
 
 def show_error():
-    showerror("Error!", "Press help button to show common mistakes in usage.")
+    mymessagebox(30, 30, "Error!", "ERROR!\n\nPress help button\nto show common\nmistakes in usage.\n")
 
 def button0_click():
-    showinfo("Source code: github.com/vovuas2003/McEliece", "1st line = current configuration of cryptosystem.\n2nd line = public key (send to anybody).\n3rd line = first half (s) of private key (keep in secret!).\n4th line = second half (p) of private key (keep in secret!).\nBig field = place for writing text or pasting message.\nGenerate keys = rewrite all 3 keys.\nEncrypt = pubkey is required.\nDecrypt = both privkeys are required.\nYou can restore any key from the other two.\nConfig = change cryptosystem parameters n and k.\n(two numbers separated by a space, default: 255 210).\n(255 mod n = 0; 255 = 3*5*17)\n(2 <= k <= n; (n - k) div 2 bytes are randomly changed)\n\nPT! = just easter egg :)")
+    mymessagebox(15, 15, "Source code: github.com/vovuas2003/McEliece", "Program can work slow and doesn't response, it is normal.\n1st line = current configuration of cryptosystem.\n2nd line = public key (send to anybody).\n3rd line = first half (s) of private key (keep in secret!).\n4th line = second half (p) of private key (keep in secret!).\nBig field = place for writing text or pasting message.\nGenerate keys = rewrite all 3 keys.\nEncrypt = pubkey is required.\nDecrypt = both privkeys are required.\nYou can restore any key from the other two.\nConfig = change cryptosystem parameters n and k.\n(two numbers separated by a space, default: 255 210)\n(255 mod n = 0; 255 = 3 * 5 * 17)\n(2 <= k <= n; (n - k) div 2 bytes are randomly changed)\nPT! = just easter egg :)")
 
 def button1_click():
     try:
@@ -84,7 +91,7 @@ def button7_click():
         show_error()
 
 def button8_click():
-    showwarning("PT!", "PT!" * 10)
+    mymessagebox(200, 15, "PT!" * 25, "PT!")
 
 window = tk.Tk()
 window.title("McEliece by vovuas2003")
