@@ -1,8 +1,8 @@
-#THE PROGRAM ISN'T FINISHED!
-
 #pyinstaller -F -i "icon.ico" McEliece_console.py
 
 import cryptosystem_core as core
+import getpass
+import random
 
 def main():
     safe_start()
@@ -31,8 +31,8 @@ def start_menu():
 
 def menu():
     print("\nMcEliece cryptosystem implementation by vovuas2003.\n")
-    print("All necessary txt files must be located in the directory with this exe program.\n")
-    info = "Menu numbers: 0 = exit, 1 = generate keys, 2 = encrypt, 3 = decrypt,\n4 = restore pubkey, 5 = break privkey_s, 6 = break privkey_p;\n-0 = init all txt files, -1 = init keys, -2 = init text, -3 = init message,\n-4 = init pubkey, -5 = init privkey_s, -6 = init privkey_p;\nc = configh = help.\n"
+    print("All necessary txt files must be in utf-8 and located in the directory with this exe program.\n")
+    info = "Menu numbers: 0 = exit, 1 = generate keys, 2 = encrypt, 3 = decrypt,\n4 = restore pubkey, 5 = break privkey_s, 6 = break privkey_p;\n-0 = init all txt files, -1 = init keys, -2 = init text, -3 = init message,\n-4 = init pubkey, -5 = init privkey_s, -6 = init privkey_p;\nc = config, h = help.\n"
     err = "Error! Check command info and try again!\n"
     ok = "Operation successful.\n"
     inp = [str(i) for i in range(7)] + ['-' + str(i) for i in range(7)] + ['c', 'h'] + ['1337']
@@ -43,6 +43,16 @@ def menu():
             s = input("Wrong menu number, h = help: ")
         if s == 'h':
             print(info)
+        elif s == 'c':
+            print("Default config is 255 210, current is " + str(core.n) + " " + str(core.k) + ". Change config?")
+            if(not get_yes_no()):
+                continue
+            try:
+                print("Config is two numbers n >= k >= 2; (3 * 5 * 17) mod n = 0.")
+                core.config(input("Write n and k separated by a space: "))
+                print(ok)
+            except:
+                print(err)
         elif s == '0':
             print("\nGood luck!")
             break
@@ -52,10 +62,9 @@ def menu():
                 continue
             try:
                 G, S, P = core.generate()
-                with open("pubkey.txt", "w", encoding = "utf-8") as pub, open("privkey_s.txt", "w", encoding = "utf-8") as privs, open("privkey_p.txt", "w", encoding = "utf-8") as privp:
-                    pub.write(G)
-                    privs.write(S)
-                    privp.write(P)
+                write_txt("pubkey", G)
+                write_txt("privkey_s", S)
+                write_txt("privkey_p", P)
                 print(ok)
             except:
                 print(err)
@@ -64,7 +73,10 @@ def menu():
             if(not get_yes_no()):
                 continue
             try:
-                encrypt(n, k, order, GF)
+                G = read_txt("pubkey")
+                text = read_txt("text")
+                msg = core.encrypt(G, text)
+                write_txt("message", msg)
                 print(ok)
             except:
                 print(err)
@@ -73,7 +85,11 @@ def menu():
             if(not get_yes_no()):
                 continue
             try:
-                decrypt(n, k, GF, rs)
+                S = read_txt("privkey_s")
+                P = read_txt("privkey_p")
+                msg = read_txt("message")
+                text = core.decrypt(S, P, msg)
+                write_txt("text", text)
                 print(ok)
             except:
                 print(err)
@@ -82,7 +98,10 @@ def menu():
             if(not get_yes_no()):
                 continue
             try:
-                restore_G_(n, k, GF, rs)
+                S = read_txt("privkey_s")
+                P = read_txt("privkey_p")
+                G = core.restore_G(S, P)
+                write_txt("pubkey", G)
                 print(ok)
             except:
                 print(err)
@@ -91,7 +110,10 @@ def menu():
             if(not get_yes_no()):
                 continue
             try:
-                break_S(n, k, GF)
+                G = read_txt("pubkey")
+                P = read_txt("privkey_p")
+                S = core.break_S(G, P)
+                write_txt("privkey_s", S)
                 print(ok)
             except:
                 print(err)
@@ -100,7 +122,79 @@ def menu():
             if(not get_yes_no()):
                 continue
             try:
-                break_P(n, k, GF, rs)
+                G = read_txt("pubkey")
+                S = read_txt("privkey_s")
+                P = core.break_P(G, S)
+                write_txt("privkey_p", P)
+                print(ok)
+            except:
+                print(err)
+        elif s == '-0':
+            print("Create (or make empty) all 5 necessary txt files in right utf-8 encoding.")
+            if(not get_yes_no()):
+                continue
+            try:
+                write_txt("pubkey", "")
+                write_txt("privkey_s", "")
+                write_txt("privkey_p", "")
+                write_txt("text", "")
+                write_txt("message", "")
+                print(ok)
+            except:
+                print(err)
+        elif s == '-1':
+            print("Create (or make empty) all 3 keys txt files in right utf-8 encoding.")
+            if(not get_yes_no()):
+                continue
+            try:
+                write_txt("pubkey", "")
+                write_txt("privkey_s", "")
+                write_txt("privkey_p", "")
+                print(ok)
+            except:
+                print(err)
+        elif s == '-2':
+            print("Create (or make empty) text.txt in right utf-8 encoding.")
+            if(not get_yes_no()):
+                continue
+            try:
+                write_txt("text", "")
+                print(ok)
+            except:
+                print(err)
+        elif s == '-3':
+            print("Create (or make empty) message.txt in right utf-8 encoding.")
+            if(not get_yes_no()):
+                continue
+            try:
+                write_txt("message", "")
+                print(ok)
+            except:
+                print(err)
+        elif s == '-4':
+            print("Create (or make empty) pubkey.txt in right utf-8 encoding.")
+            if(not get_yes_no()):
+                continue
+            try:
+                write_txt("pubkey", "")
+                print(ok)
+            except:
+                print(err)
+        elif s == '-5':
+            print("Create (or make empty) privkey_s.txt in right utf-8 encoding.")
+            if(not get_yes_no()):
+                continue
+            try:
+                write_txt("privkey_s", "")
+                print(ok)
+            except:
+                print(err)
+        elif s == '-6':
+            print("Create (or make empty) privkey_p.txt in right utf-8 encoding.")
+            if(not get_yes_no()):
+                continue
+            try:
+                write_txt("privkey_p", "")
                 print(ok)
             except:
                 print(err)
@@ -154,6 +248,15 @@ def PT(m, M = 3):
     if f:
         print(p * (10 * m + 1))
     print()
+
+def write_txt(name, string):
+    with open(name + ".txt", "w", encoding = "utf-8") as f:
+        f.write(string)
+
+def read_txt(name):
+    with open(name + ".txt", "r", encoding = "utf-8") as f:
+        out = f.read()
+    return out
 
 if __name__ == "__main__":
     main()
