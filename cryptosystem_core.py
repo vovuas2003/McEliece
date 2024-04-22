@@ -5,6 +5,7 @@
 #all these variables are strings, so it's easy to integrate this code into any project (check GUI and console examples)
 #text must be in utf-8 encoding (e.g. force encoding when open txt files, check console example)
 #keys and messages are saved as base64 strings
+#you can use bin_encrypt and bin_decrypt functions if text is a byte array (check console example)
 
 '''
 import cryptosystem_core as core
@@ -15,8 +16,9 @@ G = core.restore_G(S, P)
 S = core.break_S(G, P)
 P = core.break_P(G, S)
 core.config("255 210") #this is the default configuration, NO NEED TO WRITE THIS LINE FOR INITIALIZATION, it is just an example of using the function
-#these parameters n and k affect the length of the keys and the number of erroneous bytes in the message
-#see the comments below to understand the requirements for n and k
+#these parameters n and k affect the length of the keys, messages and the number of erroneous bytes in the message
+#larger values = larger keys; randomly change (n - k) div 2 bytes during encryption, but add (n - k + 1) bytes to each chunk with len (k - 1).
+#see the comments below to understand the requirements for n and k (or check console example)
 '''
 
 #if you want to figure out how the code below works, keep in mind that
@@ -127,8 +129,13 @@ def unpad_message(msg):
     return msg[: -padding_byte]
 
 def encrypt(key, text):
+    return bin_encrypt(key, text.encode("utf-8"))
+
+def decrypt(s, p, msg):
+    return bin_decrypt(s, p, msg).decode("utf-8")
+
+def bin_encrypt(key, text):
     G_ = GF(read_pubkey(key))
-    text = text.encode("utf-8")
     out = bytes()
     while len(text) > k - 1:
         tmp = text[: k - 1]
@@ -136,6 +143,16 @@ def encrypt(key, text):
         out += encrypt_one(G_, tmp)
     out += encrypt_one(G_, text)
     return base64.b64encode(out).decode()
+
+def bin_decrypt(s, p, msg):
+    S_inv = np.linalg.inv(GF(read_privkey_s(s)))
+    P_inv = GF(build_P_inv(read_privkey_p(p)))
+    msg = [int(i) for i in base64.b64decode(msg)]
+    msg = [msg[i - n : i] for i in range(n, len(msg) + n, n)]
+    msg = [decrypt_one(S_inv, P_inv, GF(i)) for i in msg]
+    msg = [i for j in msg for i in j]
+    msg = bytes(msg)
+    return msg
 
 def encrypt_one(G_, text):
     msg = pad_message(text, k)
@@ -150,16 +167,6 @@ def encrypt_one(G_, text):
         z[ind] %= order
     c = c + GF(z)
     return bytes(c)
-
-def decrypt(s, p, msg):
-    S_inv = np.linalg.inv(GF(read_privkey_s(s)))
-    P_inv = GF(build_P_inv(read_privkey_p(p)))
-    msg = [int(i) for i in base64.b64decode(msg)]
-    msg = [msg[i - n : i] for i in range(n, len(msg) + n, n)]
-    msg = [decrypt_one(S_inv, P_inv, GF(i)) for i in msg]
-    msg = [i for j in msg for i in j]
-    msg = bytes(msg).decode("utf-8")
-    return msg
 
 def decrypt_one(S_inv, P_inv, msg):
     msg = msg @ P_inv
@@ -209,26 +216,6 @@ def break_P(key, s):
         #print("Wrong pubkey and privkey_s combination!")
         raise Exception()
     return write_privkey_p(p)
-
-def bin_encrypt(key, text):
-    G_ = GF(read_pubkey(key))
-    out = bytes()
-    while len(text) > k - 1:
-        tmp = text[: k - 1]
-        text = text[k - 1 :]
-        out += encrypt_one(G_, tmp)
-    out += encrypt_one(G_, text)
-    return base64.b64encode(out).decode()
-
-def bin_decrypt(s, p, msg):
-    S_inv = np.linalg.inv(GF(read_privkey_s(s)))
-    P_inv = GF(build_P_inv(read_privkey_p(p)))
-    msg = [int(i) for i in base64.b64decode(msg)]
-    msg = [msg[i - n : i] for i in range(n, len(msg) + n, n)]
-    msg = [decrypt_one(S_inv, P_inv, GF(i)) for i in msg]
-    msg = [i for j in msg for i in j]
-    msg = bytes(msg)
-    return msg
 
 if __name__ == "__main__":
     main()

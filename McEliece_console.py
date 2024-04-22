@@ -2,6 +2,7 @@
 
 import getpass
 import random
+import base64
 
 def main():
     safe_start()
@@ -44,11 +45,11 @@ def menu():
         if s == 'h':
             print(info)
         elif s == 'b':
-            print("Go to binary files encryption menu?")
+            print("Go to binary files encryption menu? Don't forget to generate keys if you want!")
             if(not get_yes_no()):
                 continue
             try:
-                if(bin_menu()):
+                if(bin_menu(core)):
                     break
             except:
                 raise Exception()
@@ -57,7 +58,7 @@ def menu():
             if(not get_yes_no()):
                 continue
             try:
-                print("Config is two numbers n >= k >= 2; (3 * 5 * 17) mod n = 0.")
+                print("Config is two numbers n >= k >= 2; (3 * 5 * 17) mod n = 0. Larger values = larger keys.\nRandomly change (n - k) div 2 bytes during encryption, but add (n - k + 1) bytes to each chunk with len (k - 1).")
                 core.config(input("Write n and k separated by a space: "))
                 print(ok)
             except:
@@ -218,13 +219,12 @@ def menu():
             print("Impossible behaviour, mistake in source code!\nThe string allowed in the inp array is not bound to the call of any function!")
             break
 
-def bin_menu():
-    import cryptosystem_core as core
-    print("\nName of encrypted and based64 binary file is binary.txt, first line in it is a name of the original file.")
-    info = "Binary menu numbers: 0 = go back to common menu; 1 = encrypt, 2 = decrypt; h = help.\n"
+def bin_menu(core):
+    print("\nFirst line in binary.txt is a name of the original file (with extension), you can edit it.")
+    info = "Binary menu numbers: 0 = go back to common menu; 1 = encrypt, 2 = decrypt;\n-0 = init binary.txt, -1 = to base64, -2 = from base64; h = help.\n"
     err = "Error! Check command info and try again!\n"
     ok = "Operation successful.\n"
-    inp = [str(i) for i in range(3)] + ['h']
+    inp = [str(i) for i in range(3)] + ['-' + str(i) for i in range(3)] + ['h']
     print(info)
     while True:
         s = input("Binary menu number: ")
@@ -245,23 +245,53 @@ def bin_menu():
                 with open(name, "rb") as f:
                     b = f.read()
                 out = core.bin_encrypt(G, b)
-                with open("binary.txt", "w") as f:
-                    f.write(name + '\n')
-                    f.write(out)
+                write_txt("binary", name + '\n' + out)
                 print(ok)
             except:
                 print(err)
         elif s == '2':
-            print("You need privkey_s.txt, privkey_p.txt and binary.txt.")
+            print("You need privkey_s.txt, privkey_p.txt and binary.txt; name of new file is the first string in binary.txt.")
             if(not get_yes_no()):
                 continue
             try:
                 S = read_txt("privkey_s")
                 P = read_txt("privkey_p")
-                with open("binary.txt", "r") as f:
-                    name = f.readline()[: -1]
-                    msg = f.readline()
+                name, msg = read_txt("binary").split('\n')
                 text = core.bin_decrypt(S, P, msg)
+                with open(name, "wb") as f:
+                    f.write(text)
+                print(ok)
+            except:
+                print(err)
+        elif s == '-0':
+            print("Create (or make empty) binary.txt in right utf-8 encoding.")
+            if(not get_yes_no()):
+                continue
+            try:
+                write_txt("binary", "")
+                print(ok)
+            except:
+                print(err)
+        elif s == '-1':
+            print("Convert any file to base64 string without any encryption; binary.txt will be rewritten.")
+            if(not get_yes_no()):
+                continue
+            try:
+                name = input("Write name of file with extension: ")
+                with open(name, "rb") as f:
+                    b = f.read()
+                out = base64.b64encode(b).decode()
+                write_txt("binary", name + '\n' + out)
+                print(ok)
+            except:
+                print(err)
+        elif s == '-2':
+            print("Convert binary.txt from base64; name of new file is the first string in binary.txt.")
+            if(not get_yes_no()):
+                continue
+            try:
+                name, msg = read_txt("binary").split('\n')
+                text = base64.b64decode(msg)
                 with open(name, "wb") as f:
                     f.write(text)
                 print(ok)
