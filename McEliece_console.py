@@ -32,10 +32,10 @@ def menu():
     import cryptosystem_core as core
     print("\nMcEliece cryptosystem implementation by vovuas2003.\n")
     print("All necessary txt files must be in utf-8 and located in the directory with this exe program.\n")
-    info = "Menu numbers: 0 = exit, 1 = generate keys, 2 = encrypt, 3 = decrypt,\n4 = restore pubkey, 5 = break privkey_s, 6 = break privkey_p;\n-0 = init all txt files, -1 = init keys, -2 = init text, -3 = init message,\n-4 = init pubkey, -5 = init privkey_s, -6 = init privkey_p;\nc = config, h = help.\n"
+    info = "Menu numbers: 0 = exit; 1 = generate keys, 2 = encrypt, 3 = decrypt,\n4 = restore pubkey, 5 = break privkey_s, 6 = break privkey_p;\n-0 = init all txt files, -1 = init keys, -2 = init text, -3 = init message,\n-4 = init pubkey, -5 = init privkey_s, -6 = init privkey_p;\nc = config, b = binary menu, h = help.\n"
     err = "Error! Check command info and try again!\n"
     ok = "Operation successful.\n"
-    inp = [str(i) for i in range(7)] + ['-' + str(i) for i in range(7)] + ['c', 'h'] + ['1337']
+    inp = [str(i) for i in range(7)] + ['-' + str(i) for i in range(7)] + ['c', 'b', 'h'] + ['1337']
     print(info)
     while True:
         s = input("Menu number: ")
@@ -43,6 +43,15 @@ def menu():
             s = input("Wrong menu number, h = help: ")
         if s == 'h':
             print(info)
+        elif s == 'b':
+            print("Go to binary files encryption menu?")
+            if(not get_yes_no()):
+                continue
+            try:
+                if(bin_menu()):
+                    break
+            except:
+                raise Exception()
         elif s == 'c':
             print("Default config is 255 210, current is " + str(core.n) + " " + str(core.k) + ". Change config?")
             if(not get_yes_no()):
@@ -208,6 +217,60 @@ def menu():
         else:
             print("Impossible behaviour, mistake in source code!\nThe string allowed in the inp array is not bound to the call of any function!")
             break
+
+def bin_menu():
+    import cryptosystem_core as core
+    print("\nName of encrypted and based64 binary file is binary.txt, first line in it is a name of the original file.")
+    info = "Binary menu numbers: 0 = go back to common menu; 1 = encrypt, 2 = decrypt; h = help.\n"
+    err = "Error! Check command info and try again!\n"
+    ok = "Operation successful.\n"
+    inp = [str(i) for i in range(3)] + ['h']
+    print(info)
+    while True:
+        s = input("Binary menu number: ")
+        while s not in inp:
+            s = input("Wrong menu number, h = help: ")
+        if s == 'h':
+            print(info)
+        elif s == '0':
+            print("Go back to common menu.\n")
+            break
+        elif s == '1':
+            print("You need pubkey.txt and any file that you want to encrypt; binary.txt will be rewritten.")
+            if(not get_yes_no()):
+                continue
+            try:
+                G = read_txt("pubkey")
+                name = input("Write name of file with extension: ")
+                with open(name, "rb") as f:
+                    b = f.read()
+                out = core.bin_encrypt(G, b)
+                with open("binary.txt", "w") as f:
+                    f.write(name + '\n')
+                    f.write(out)
+                print(ok)
+            except:
+                print(err)
+        elif s == '2':
+            print("You need privkey_s.txt, privkey_p.txt and binary.txt.")
+            if(not get_yes_no()):
+                continue
+            try:
+                S = read_txt("privkey_s")
+                P = read_txt("privkey_p")
+                with open("binary.txt", "r") as f:
+                    name = f.readline()[: -1]
+                    msg = f.readline()
+                text = core.bin_decrypt(S, P, msg)
+                with open(name, "wb") as f:
+                    f.write(text)
+                print(ok)
+            except:
+                print(err)
+        else:
+            print("Impossible behaviour, mistake in source code!\nThe string allowed in the inp array is not bound to the call of any function!")
+            return 1
+    return 0
 
 def get_yes_no():
     s = input("Confirm (0 = go back, 1 = continue): ")

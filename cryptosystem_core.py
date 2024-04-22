@@ -210,5 +210,25 @@ def break_P(key, s):
         raise Exception()
     return write_privkey_p(p)
 
+def bin_encrypt(key, text):
+    G_ = GF(read_pubkey(key))
+    out = bytes()
+    while len(text) > k - 1:
+        tmp = text[: k - 1]
+        text = text[k - 1 :]
+        out += encrypt_one(G_, tmp)
+    out += encrypt_one(G_, text)
+    return base64.b64encode(out).decode()
+
+def bin_decrypt(s, p, msg):
+    S_inv = np.linalg.inv(GF(read_privkey_s(s)))
+    P_inv = GF(build_P_inv(read_privkey_p(p)))
+    msg = [int(i) for i in base64.b64decode(msg)]
+    msg = [msg[i - n : i] for i in range(n, len(msg) + n, n)]
+    msg = [decrypt_one(S_inv, P_inv, GF(i)) for i in msg]
+    msg = [i for j in msg for i in j]
+    msg = bytes(msg)
+    return msg
+
 if __name__ == "__main__":
     main()
