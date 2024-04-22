@@ -45,7 +45,7 @@ def menu():
         if s == 'h':
             print(info)
         elif s == 'b':
-            print("Go to binary files encryption menu? Don't forget to generate keys if you want!")
+            print("Go to binary files encryption menu? Don't forget to generate keys and change config before that (if you want)!")
             if(not get_yes_no()):
                 continue
             try:
@@ -221,7 +221,7 @@ def menu():
 
 def bin_menu(core):
     print("\nFirst line in binary.txt is a name of the original file (with extension), you can edit it.")
-    info = "Binary menu numbers: 0 = go back to common menu; 1 = encrypt, 2 = decrypt;\n-0 = init binary.txt, -1 = to base64, -2 = from base64; h = help.\n"
+    info = "Binary menu numbers: 0 = go back to common menu; 1 = encrypt, 2 = decrypt;\n-0 = init binary.txt; -1 = to base64, -2 = from base64; h = help.\n"
     err = "Error! Check command info and try again!\n"
     ok = "Operation successful.\n"
     inp = [str(i) for i in range(3)] + ['-' + str(i) for i in range(3)] + ['h']
@@ -233,7 +233,7 @@ def bin_menu(core):
         if s == 'h':
             print(info)
         elif s == '0':
-            print("Go back to common menu.\n")
+            print("Going back to common menu.\n")
             break
         elif s == '1':
             print("You need pubkey.txt and any file that you want to encrypt; binary.txt will be rewritten.")
