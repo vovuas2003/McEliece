@@ -321,10 +321,10 @@ def secret_menu(core):
         return 0
     print("\nHidden input from keyboard, writing to secret_message.txt.")
     print("Default config is 255 210, current is " + str(core.n) + " " + str(core.k) + ".")
-    info = "Secret menu numbers: 0 = go back to common menu; 1 = encrypt, 2 = decrypt; h = help.\n"
+    info = "Secret menu numbers: 0 = go back; 1 = encrypt, 2 = decrypt; -0 = init txt; h = help.\n"
     err = "Error! Check command info and try again!\n"
     ok = "Operation successful.\n"
-    inp = [str(i) for i in range(3)] + ['h']
+    inp = [str(i) for i in range(3)] + ['-0'] + ['h']
     print(info)
     while True:
         s = input("Secret menu number: ")
@@ -357,6 +357,15 @@ def secret_menu(core):
                 msg = read_txt("secret_message")
                 text = core.decrypt(S, P, msg)
                 print('\nSecret text: ' + text + '\n')
+                print(ok)
+            except:
+                print(err)
+        elif s == '-0':
+            print("Create (or make empty) secret_message.txt in right utf-8 encoding.")
+            if(not get_yes_no()):
+                continue
+            try:
+                write_txt("secret_message", "")
                 print(ok)
             except:
                 print(err)
