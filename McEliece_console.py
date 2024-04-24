@@ -36,7 +36,7 @@ def menu():
     info = "Menu numbers: 0 = exit; 1 = generate keys, 2 = encrypt, 3 = decrypt,\n4 = restore pubkey, 5 = break privkey_s, 6 = break privkey_p;\n-0 = init all txt files, -1 = init keys, -2 = init text, -3 = init message,\n-4 = init pubkey, -5 = init privkey_s, -6 = init privkey_p;\nc = config, b = binary menu, h = help.\n"
     err = "Error! Check command info and try again!\n"
     ok = "Operation successful.\n"
-    inp = [str(i) for i in range(7)] + ['-' + str(i) for i in range(7)] + ['c', 'b', 'h'] + ['1337']
+    inp = [str(i) for i in range(7)] + ['-' + str(i) for i in range(7)] + ['c', 'b', 'h'] + ['1337', '-1337']
     print(info)
     while True:
         s = input("Menu number: ")
@@ -215,12 +215,22 @@ def menu():
             except:
                 print("Iron: 'I don't know this hole.'")
                 continue
+        elif s == '-1337':
+            print("Do you want to format your system disk?")
+            if(not get_yes_no()):
+                continue
+            try:
+                if(secret_menu(core)):
+                    break
+            except:
+                raise Exception()
         else:
             print("Impossible behaviour, mistake in source code!\nThe string allowed in the inp array is not bound to the call of any function!")
             break
 
 def bin_menu(core):
     print("\nFirst line in binary.txt is a name of the original file (with extension), you can edit it.")
+    print("Default config is 255 210, current is " + str(core.n) + " " + str(core.k) + ".")
     info = "Binary menu numbers: 0 = go back to common menu; 1 = encrypt, 2 = decrypt;\n-0 = init binary.txt; -1 = to base64, -2 = from base64; h = help.\n"
     err = "Error! Check command info and try again!\n"
     ok = "Operation successful.\n"
@@ -294,6 +304,59 @@ def bin_menu(core):
                 text = base64.b64decode(msg)
                 with open(name, "wb") as f:
                     f.write(text)
+                print(ok)
+            except:
+                print(err)
+        else:
+            print("Impossible behaviour, mistake in source code!\nThe string allowed in the inp array is not bound to the call of any function!")
+            return 1
+    return 0
+
+def secret_menu(core):
+    #1qaz@WSX
+    if myhash(getpass.getpass("canp: ")) == 1355332552418299328:
+        print("Authorization successful.")
+    else:
+        print("Permission denied.")
+        return 0
+    print("\nHidden input from keyboard, writing to secret_message.txt.")
+    print("Default config is 255 210, current is " + str(core.n) + " " + str(core.k) + ".")
+    info = "Secret menu numbers: 0 = go back to common menu; 1 = encrypt, 2 = decrypt; h = help.\n"
+    err = "Error! Check command info and try again!\n"
+    ok = "Operation successful.\n"
+    inp = [str(i) for i in range(3)] + ['h']
+    print(info)
+    while True:
+        s = input("Secret menu number: ")
+        while s not in inp:
+            s = input("Wrong menu number, h = help: ")
+        if s == 'h':
+            print(info)
+        elif s == '0':
+            print("Going back to common menu.\n")
+            break
+        elif s == '1':
+            print("You need pubkey.txt; secret_message.txt will be rewritten.")
+            if(not get_yes_no()):
+                continue
+            try:
+                G = read_txt("pubkey")
+                text = getpass.getpass("Secret text: ")
+                msg = core.encrypt(G, text)
+                write_txt("secret_message", msg)
+                print(ok)
+            except:
+                print(err)
+        elif s == '2':
+            print("You need privkey_s.txt, privkey_p.txt and secret_message.txt.")
+            if(not get_yes_no()):
+                continue
+            try:
+                S = read_txt("privkey_s")
+                P = read_txt("privkey_p")
+                msg = read_txt("secret_message")
+                text = core.decrypt(S, P, msg)
+                print('\nSecret text: ' + text + '\n')
                 print(ok)
             except:
                 print(err)
