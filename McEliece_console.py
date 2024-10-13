@@ -1,5 +1,6 @@
 #pyinstaller -F -i "icon.ico" McEliece_console.py
 
+import hashlib
 import getpass
 import random
 import base64
@@ -33,10 +34,10 @@ def menu():
     import cryptosystem_core as core
     print("\nMcEliece cryptosystem implementation by vovuas2003.\n")
     print("All necessary txt files must be in utf-8 and located in the directory with this exe program.\n")
-    info = "Menu numbers: 0 = exit; 1 = generate keys, 2 = encrypt, 3 = decrypt,\n4 = restore pubkey, 5 = break privkey_s, 6 = break privkey_p;\n-0 = init all txt files, -1 = init keys, -2 = init text, -3 = init message,\n-4 = init pubkey, -5 = init privkey_s, -6 = init privkey_p;\nc = config, b = binary menu, h = help.\n"
+    info = "Menu numbers: 0 = exit; 1 = generate keys, 2 = encrypt, 3 = decrypt,\n4 = restore pubkey, 5 = break privkey_s, 6 = break privkey_p;\n-0 = init all txt files, -1 = init keys, -2 = init text, -3 = init message,\n-4 = init pubkey, -5 = init privkey_s, -6 = init privkey_p;\nc = config, b = binary menu, u = unsafe keygen by password, h = help.\n"
     err = "Error! Check command info and try again!\n"
     ok = "Operation successful.\n"
-    inp = [str(i) for i in range(7)] + ['-' + str(i) for i in range(7)] + ['c', 'b', 'h'] + ['1337', '-1337']
+    inp = [str(i) for i in range(7)] + ['-' + str(i) for i in range(7)] + ['c', 'b', 'h', 'u'] + ['1337', '-1337']
     print(info)
     while True:
         s = input("Menu number: ")
@@ -66,6 +67,20 @@ def menu():
         elif s == '0':
             print("\nGood luck!")
             break
+        elif s == 'u':
+            print("WARNING: setting sha256hash(password) mod 2^32 as random seed is VERY unsafe practice!\nIt is better to use menu number 1 for independent random.")
+            print("This operation will rewrite pubkey.txt, privkey_s.txt and privkey_p.txt; are you sure?")
+            if(not get_yes_no()):
+                continue
+            try:
+                seed = normalhash(getpass.getpass("Any password for hashing: "))
+                G, S, P = core.unsafe_generate(seed)
+                write_txt("pubkey", G)
+                write_txt("privkey_s", S)
+                write_txt("privkey_p", P)
+                print(ok)
+            except:
+                print(err)
         elif s == '1':
             print("This operation will rewrite pubkey.txt, privkey_s.txt and privkey_p.txt; are you sure?")
             if(not get_yes_no()):
@@ -385,6 +400,9 @@ def myhash(s, m = 2**61 - 1, p = 257):
     for i in range(len(s)):
     	a = ((a * p) % m + ord(s[i])) % m
     return a
+
+def normalhash(s):
+    return int(hashlib.sha256(bytearray(s, 'utf-8')).hexdigest(), 16)
 
 def PT(m, M = 3):
     if m == 0:

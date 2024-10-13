@@ -10,6 +10,7 @@
 '''
 import cryptosystem_core as core
 G, S, P = core.generate()
+G, S, P = core.unsafe_generate(seed) #e.g. seed = hash(password)
 msg = core.encrypt(G, text)
 text = core.decrypt(S, P, msg)
 G = core.restore_G(S, P)
@@ -73,6 +74,30 @@ def generate_P():
     p = []
     for i in range(n):
         p.append(r.pop(random.randint(0, n - 1 - i)))
+    P = GF.Zeros((n, n))
+    for i in range(n):
+        P[i, p[i]] = 1
+    return P, p
+
+def unsafe_generate(h):
+    seed = h % (2**32)
+    S = unsafe_generate_S(seed)
+    G = rs.G
+    P, p = unsafe_generate_P(seed)
+    G_ = S @ G @ P
+    return write_pubkey(G_), write_privkey_s(S), write_privkey_p(p)
+
+def unsafe_generate_S(seed):
+    pseudo = np.random.RandomState(seed)
+    S = GF(pseudo.randint(0, order, (k, k)))
+    while np.linalg.det(S) == 0:
+        S = GF(pseudo.randint(0, order, (k, k)))
+    return S
+
+def unsafe_generate_P(seed):
+    pseudo = np.random.RandomState(seed)
+    p = [i for i in range(n)]
+    pseudo.shuffle(p)
     P = GF.Zeros((n, n))
     for i in range(n):
         P[i, p[i]] = 1
