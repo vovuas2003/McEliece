@@ -2,6 +2,8 @@ McEliece cryptosystem implementation by vovuas2003
 
 Required Python libraries: numpy, galois.
 
+UPDATE: version 2 is available. Check cryptosystem_core_v2 and McEliece_console_v2.
+
 All cryptosystem functions are implemented in cryptosystem_core.py, just import it into your project and enjoy!
 For example, I coded a console menu (that works with text in txt files and also with any files in binary mode) and a GUI app (for text encryption).
 
