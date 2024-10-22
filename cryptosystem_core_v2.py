@@ -65,7 +65,8 @@ class McEliece_core:
     def __init__(self):
         self._order = 256 #p^m = 2**8; encryption of each byte
         self._n = 255 #(order - 1) mod n = 0 for Reed Solomon code; 255 = 3 * 5 * 17 = (order - 1)
-        self._k = 210 #2 <= k <= n; randomly change (n - k) div 2 bytes during encryption, but add (n - k + 1) bytes to each chunk with len (k - 1); k != 1 for padding function; k almost equal to n is very bad because of small amount of randomly changed bytes (k == n -> privkey for decryption == numpy.linalg.inv(pubkey))
+        self._k = 210 #2 <= k <= n; randomly change t = (n - k) div 2 bytes during encryption, but add (n - k + 1) bytes to each chunk with len (k - 1); k != 1 for padding function; k almost equal to n is very bad because of small amount of randomly changed bytes (k == n -> privkey for decryption == numpy.linalg.inv(pubkey))
+        self._t = (self._n - self._k) // 2
         self._GF = galois.GF(2, 8, irreducible_poly = "x^8 + x^4 + x^3 + x^2 + 1", primitive_element = "x", verify = False) #hardcoded galois.GF(2**8).properties for pyinstaller
         self._rs = galois.ReedSolomon(self._n, self._k, field = self._GF)
         self._G = self._GF.Zeros((self._k, self._n)) #pubkey
@@ -80,10 +81,11 @@ class McEliece_core:
                 raise Exception()
             rs = galois.ReedSolomon(n, k, field = self._GF)
         except:
-            raise Exception()
+            raise
         else:
             self._n = n
             self._k = k
+            self._t = (n - k) // 2
             self._rs = rs
             #Also unset all keys!
             self._G = self._GF.Zeros((self._k, self._n))
@@ -101,8 +103,9 @@ class McEliece_core:
         elif type(seed) != int:
             raise Exception()
         else:
-            self._unsafe_generate_S(seed % (2**32))
-            self._unsafe_generate_P(seed % (2**32))
+            seed %= 2**32
+            self._unsafe_generate_S(seed)
+            self._unsafe_generate_P(seed)
         self._G = self._S @ self._rs.G @ self._P
     def get_pubkey(self):
         return [int(i) for j in self._G for i in j]
@@ -115,7 +118,7 @@ class McEliece_core:
             G = [G[i - self._n : i] for i in range(self._n, self._n * self._k + self._n, self._n)]
             G = self._GF(G)
         except:
-            raise Exception()
+            raise
         else:
             self._G = G
     def set_privkey_S(self, S):
@@ -124,7 +127,7 @@ class McEliece_core:
             S = self._GF(S)
             S_inv = np.linalg.inv(S)
         except:
-            raise Exception()
+            raise
         else:
             self._S = S
             self._S_inv = S_inv
@@ -146,7 +149,7 @@ class McEliece_core:
         try:
             S_inv = np.linalg.inv(S)
         except:
-            raise Exception()
+            raise
         self._S = S
         self._S_inv = S_inv
     def restore_privkey_p(self):
@@ -168,6 +171,8 @@ class McEliece_core:
             if f:
                 continue
             raise Exception()
+        if sorted(p) != [i for i in range(self._n)]:
+            raise Exception()
         self._p = p
         self._P = self._GF.Zeros((self._n, self._n))
         self._P_inv = self._GF.Zeros((self._n, self._n))
@@ -184,14 +189,14 @@ class McEliece_core:
             out += self._encrypt_one(text)
             return out
         except:
-            raise Exception()
+            raise
     def decrypt(self, msg):
         try:
             msg = [msg[i - self._n : i] for i in range(self._n, len(msg) + self._n, self._n)]
             msg = [self._decrypt_one(self._GF(i)) for i in msg]
             return [i for j in msg for i in j]
         except:
-            raise Exception()
+            raise
 #End of top-level functions, please do NOT use functions below without understanding!
     def _generate_S(self):
         S = self._GF.Random((self._k, self._k))
@@ -231,10 +236,9 @@ class McEliece_core:
         msg = self._pad_message(text)
         m = self._GF(msg)
         c = m.T @ self._G
-        t = (self._n - self._k) // 2
         z = np.zeros(self._n, dtype = int)
         p = [i for i in range(self._n)]
-        for i in range(t):
+        for i in range(self._t):
             ind = p.pop(random.randint(0, self._n - 1 - i)) 
             z[ind] = random.randint(1, self._order - 1)
         c = c + self._GF(z)
@@ -249,7 +253,7 @@ class McEliece_core:
         try:
             msg = self._unpad_message(msg)
         except:
-            raise Exception()
+            raise
         return msg
     def _pad_message(self, msg):
         last_value = self._k - (len(msg) % self._k)
