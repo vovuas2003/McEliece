@@ -1,6 +1,7 @@
 McEliece cryptosystem implementation by vovuas2003
+New repository after 28.11.2024: https://meowgit.nekoea.red/C01-119/McEliece_App
 
-Required Python libraries: numpy, galois.
+Required additional Python libraries: numpy, galois (numpy extension).
 
 UPDATE: version 2 is available. Check cryptosystem_core_v2 and McEliece_console_v2.
 
