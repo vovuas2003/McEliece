@@ -2,6 +2,7 @@
 
 import hashlib
 import getpass
+import pyperclip
 
 def main():
     safe_start()
@@ -32,11 +33,11 @@ def menu():
     import cryptosystem_core_v2 as ME_core
     core = ME_core.McEliece_core()
     global_info = "All files are interpreted as raw bytes and must be located in the directory with this executable file.\nDefault filenames with .bin extension: pubkey, privkey_S, privkey_p, plaintext, ciphertext, ciphered_string.\nDon't forget to import (or generate) keys before encryption/decryption and after changing config!\nYou can restore any one key from two another (don't forget to import before).\n"
-    info = "Menu numbers: 0 = exit, s = print short info, h = print this info, g = print global info, c = change config;\n1 = generate keys, 10 = unsafe generate keys (seed = hash(password)),\n11 = export pubkey, 12 = export privkey_S, 13 = export privkey_p,\n14 = import pubkey, 15 = import privkey_S, 16 = import privkey_p,\n17 = restore pubkey, 18 = restore privkey_S, 19 = restore privkey_p;\n2 = encrypt,\n21 = encrypt non-default filename, 22 = encrypt string from keyboard, 23 = encrypt hided string.\n3 = decrypt,\n31 = decrypt non-default filename, 32 = decrypt string and show on screen\n"
+    info = "Menu numbers: 0 = exit, s = print short info, h = print this info, g = print global info, c = change config;\n1 = generate keys, 10 = unsafe generate keys (seed = hash(password));\n11 = export pubkey, 12 = export privkey_S, 13 = export privkey_p,\n14 = import pubkey, 15 = import privkey_S, 16 = import privkey_p,\n17 = restore pubkey, 18 = restore privkey_S, 19 = restore privkey_p;\n2 = encrypt,\n21 = encrypt non-default filename, 22 = encrypt string from keyboard, 23 = encrypt hided string;\n3 = decrypt,\n31 = decrypt non-default filename, 32 = decrypt string on screen, 33 = decrypt string to clipboard.\n"
     short_info = "0 = exit, s/h/g = print short/extended/global info, c = change config;\n1 = generate keys, 2 = encrypt, 3 = decrypt\n"
     err = "Error! Check global info (menu number g) and try again!\n"
     ok = "Operation successful.\n"
-    inp = ['0', 's', 'h', 'g', 'c'] + [str(i) for i in range(1, 4)] + [str(i) for i in range(10, 20)] + [str(i) for i in range(21, 24)] + [str(i) for i in range(31, 33)] + ['1337']
+    inp = ['0', 's', 'h', 'g', 'c'] + [str(i) for i in range(1, 4)] + [str(i) for i in range(10, 20)] + [str(i) for i in range(21, 24)] + [str(i) for i in range(31, 34)] + ['1337']
     print("\nMcEliece cryptosystem implementation by vovuas2003. Version 2.\n")
     print(global_info)
     print(info)
@@ -225,7 +226,7 @@ def menu():
             except:
                 print(err)
         elif s == '32':
-            print("Need ciphered_string.bin!")
+            print("Need ciphered_string.bin! Visible input!!!")
             if(not get_yes_no()):
                 continue
             try:
@@ -233,6 +234,20 @@ def menu():
                 print(ok)
             except:
                 print(err)
+        elif s == '33':
+            print("Need ciphered_string.bin! Copy to clipboard.")
+            if(not get_yes_no()):
+                continue
+            try:
+                tmp = bytes(core.decrypt([int(i) for i in read_file("ciphered_string.bin")])).decode('utf-8')
+            except:
+                print(err)
+                continue
+            try:
+                pyperclip.copy(tmp)
+                print(ok)
+            except:
+                print("Decryption was successful, but program can't use clipboard.\nOn Linux (especially Ubuntu) try to install xclip (e.g. via apt-get).")
         elif s == '1337':
             PT()
         else:
